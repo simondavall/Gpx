@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+resharper_csharp_naming_rule.constants = AaBb, AA_BB
+resharper_csharp_naming_rule.private_constants = AaBb, AA_BB
