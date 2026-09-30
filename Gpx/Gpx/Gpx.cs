@@ -165,22 +165,14 @@ namespace Dlg.Krakow.Gpx
 
         public double GetDistanceFrom(GpxPoint other)
         {
-            double thisLatitude = this.Latitude;
-            double otherLatitude = other.Latitude;
-            double thisLongitude = this.Longitude;
-            double otherLongitude = other.Longitude;
-
-            double deltaLatitude = Math.Abs(this.Latitude - other.Latitude);
-            double deltaLongitude = Math.Abs(this.Longitude - other.Longitude);
-
-            thisLatitude *= RADIAN;
-            otherLatitude *= RADIAN;
-            deltaLongitude *= RADIAN;
+            double thisLatitude = Latitude * RADIAN;
+            double otherLatitude = other.Latitude * RADIAN;
+            double deltaLongitude = Math.Abs(Longitude - other.Longitude) * RADIAN;
 
             double cos = Math.Cos(deltaLongitude) * Math.Cos(thisLatitude) * Math.Cos(otherLatitude) +
                 Math.Sin(thisLatitude) * Math.Sin(otherLatitude);
 
-            return EARTH_RADIUS * Math.Acos(cos);
+            return EARTH_RADIUS * Math.Acos(Math.Max(Math.Min(cos, 1), -1));
         }
     }
 
@@ -375,7 +367,7 @@ namespace Dlg.Krakow.Gpx
 
     public class GpxPointCollection<T> : IList<T> where T : GpxPoint
     {
-        private List<T> Points_ = new List<T>();
+        private readonly List<T> Points_ = new List<T>();
 
         public GpxPoint AddPoint(T point)
         {
@@ -505,7 +497,7 @@ namespace Dlg.Krakow.Gpx
 
     public abstract class GpxTrackOrRoute
     {
-        private List<GpxLink> Links_ = new List<GpxLink>(0);
+        private readonly List<GpxLink> Links_ = new List<GpxLink>(0);
 
         public string Name { get; set; }
         public DateTime? Time { get; set; }
@@ -529,19 +521,39 @@ namespace Dlg.Krakow.Gpx
             get { return DisplayColor != null; }
         }
 
-        public abstract GpxPointCollection<GpxPoint> ToGpxPoints();
+        public abstract double GetLength();
     }
 
     public class GpxRoute : GpxTrackOrRoute
     {
-        private GpxPointCollection<GpxRoutePoint> RoutePoints_ = new GpxPointCollection<GpxRoutePoint>();
+        private readonly GpxPointCollection<GpxRoutePoint> RoutePoints_ = new GpxPointCollection<GpxRoutePoint>();
 
         public GpxPointCollection<GpxRoutePoint> RoutePoints
         {
             get { return RoutePoints_; }
         }
 
-        public override GpxPointCollection<GpxPoint> ToGpxPoints()
+        public override double GetLength()
+        {
+            double result = 0;
+            GpxPoint current = null;
+
+            foreach (GpxRoutePoint routePoint in RoutePoints_)
+            {
+                if (current != null) result += routePoint.GetDistanceFrom(current);
+                current = routePoint;
+
+                foreach (GpxPoint gpxPoint in routePoint.RoutePoints)
+                {
+                    result += gpxPoint.GetDistanceFrom(current);
+                    current = gpxPoint;
+                }
+            }
+
+            return result;
+        }
+
+        public GpxPointCollection<GpxPoint> ToGpxPoints()
         {
             GpxPointCollection<GpxPoint> points = new GpxPointCollection<GpxPoint>();
 
@@ -561,14 +573,20 @@ namespace Dlg.Krakow.Gpx
 
     public class GpxTrack : GpxTrackOrRoute
     {
-        private List<GpxTrackSegment> Segments_ = new List<GpxTrackSegment>(1);
+        private readonly List<GpxTrackSegment> Segments_ = new List<GpxTrackSegment>(1);
 
         public IList<GpxTrackSegment> Segments
         {
             get { return Segments_; }
         }
 
-        public override GpxPointCollection<GpxPoint> ToGpxPoints()
+        public override double GetLength()
+        {
+            return Segments_.Sum(s => s.TrackPoints.GetLength());
+        }
+
+        [Obsolete]
+        public GpxPointCollection<GpxPoint> ToGpxPoints()
         {
             GpxPointCollection<GpxPoint> points = new GpxPointCollection<GpxPoint>();
 
@@ -588,7 +606,7 @@ namespace Dlg.Krakow.Gpx
 
     public class GpxTrackSegment
     {
-        GpxPointCollection<GpxTrackPoint> TrackPoints_ = new GpxPointCollection<GpxTrackPoint>();
+        readonly GpxPointCollection<GpxTrackPoint> TrackPoints_ = new GpxPointCollection<GpxTrackPoint>();
 
         public GpxPointCollection<GpxTrackPoint> TrackPoints
         {
@@ -601,14 +619,9 @@ namespace Dlg.Krakow.Gpx
         public string Href { get; set; }
         public string Text { get; set; }
         public string MimeType { get; set; }
-
         public Uri Uri
         {
-            get
-            {
-                Uri result;
-                return Uri.TryCreate(Href, UriKind.Absolute, out result) ? result : null;
-            }
+            get { return Uri.TryCreate(Href, UriKind.Absolute, out Uri result) ? result : null; }
         }
     }
 

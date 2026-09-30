@@ -15,9 +15,9 @@ namespace Dlg.Krakow.Gpx
 {
     public enum GpxObjectType { None, Attributes, Metadata, WayPoint, Route, Track };
 
-    public class GpxReader : IDisposable
+    public sealed class GpxReader : IDisposable
     {
-        private XmlReader Reader_;
+        private readonly XmlReader Reader_;
 
         public GpxObjectType ObjectType { get; private set; }
         public GpxAttributes Attributes { get; private set; }
