@@ -11,7 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml;
 
-namespace Gpx
+namespace Dlg.Krakow.Gpx
 {
     public enum GpxObjectType { None, Attributes, Metadata, WayPoint, Route, Track };
 
@@ -318,6 +318,9 @@ namespace Gpx
                         {
                             case "name":
                                 track.Name = ReadContentAsString();
+                                break;
+                            case "time":
+                                track.Time = ReadContentAsDateTime();
                                 break;
                             case "cmt":
                                 track.Comment = ReadContentAsString();
@@ -1291,6 +1294,7 @@ namespace Gpx
             {
                 switch (Reader_.NodeType)
                 {
+                    case XmlNodeType.CDATA:
                     case XmlNodeType.Text:
                         result = Reader_.Value;
                         break;

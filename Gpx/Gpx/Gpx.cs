@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gpx
+namespace Dlg.Krakow.Gpx
 {
     public static class GpxNamespaces
     {
@@ -500,6 +500,7 @@ namespace Gpx
         private readonly List<GpxLink> Links_ = new List<GpxLink>(0);
 
         public string Name { get; set; }
+        public DateTime? Time { get; set; }
         public string Comment { get; set; }
         public string Description { get; set; }
         public string Source { get; set; }
