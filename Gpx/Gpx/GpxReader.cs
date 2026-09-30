@@ -36,7 +36,7 @@ namespace Dlg.Krakow.Gpx
                 {
                     case XmlNodeType.Element:
                         if (Reader_.Name != "gpx") throw new FormatException(Reader_.Name);
-                        Attributes = ReadGpxAttribures();
+                        Attributes = ReadGpxAttributes();
                         ObjectType = GpxObjectType.Attributes;
                         return;
                 }
@@ -96,7 +96,7 @@ namespace Dlg.Krakow.Gpx
             Reader_.Close();
         }
 
-        private GpxAttributes ReadGpxAttribures()
+        private GpxAttributes ReadGpxAttributes()
         {
             GpxAttributes attributes = new GpxAttributes();
 
