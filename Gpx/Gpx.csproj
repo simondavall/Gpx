@@ -1,10 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <RootNamespace/>
+        <AssemblyName>Dlg.Krakow.Gpx</AssemblyName>
+        <RootNamespace>Dlg.Krakow</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-<!--        <Nullable>enable</Nullable>-->
+        <!--<ImplicitUsings>enable</ImplicitUsings>-->
+        <!--<Nullable>enable</Nullable>-->
     </PropertyGroup>
+
+    <PropertyGroup>
+        <Version>1.0.0</Version>
+        <InformationalVersion>1.0.0</InformationalVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Description>Solution for importing .gpx files into .Net apps.</Description>
+        <Copyright>Copyright (c) 2011-2016, dlg.krakow.pl</Copyright>
+        <PackageLicenseFile>LICENCE-dlg.krakow.pl.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>gpx</PackageTags>
+        <NeutralLanguage>en-GB</NeutralLanguage>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../LICENCE-dlg.krakow.pl.txt" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
 </Project>
