@@ -2,3 +2,7 @@
 
 resharper_csharp_naming_rule.constants = AaBb, AA_BB
 resharper_csharp_naming_rule.private_constants = AaBb, AA_BB
+resharper_csharp_naming_rule.private_instance_fields = _+aaBb, AaBb+_
+
+csharp_for_built_in_types = use_explicit_type
+csharp_for_simple_types = use_explicit_type
