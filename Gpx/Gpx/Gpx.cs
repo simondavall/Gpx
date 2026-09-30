@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gpx
+namespace Dlg.Krakow.Gpx
 {
     public static class GpxNamespaces
     {
@@ -165,14 +165,22 @@ namespace Gpx
 
         public double GetDistanceFrom(GpxPoint other)
         {
-            double thisLatitude = Latitude * RADIAN;
-            double otherLatitude = other.Latitude * RADIAN;
-            double deltaLongitude = Math.Abs(Longitude - other.Longitude) * RADIAN;
+            double thisLatitude = this.Latitude;
+            double otherLatitude = other.Latitude;
+            double thisLongitude = this.Longitude;
+            double otherLongitude = other.Longitude;
+
+            double deltaLatitude = Math.Abs(this.Latitude - other.Latitude);
+            double deltaLongitude = Math.Abs(this.Longitude - other.Longitude);
+
+            thisLatitude *= RADIAN;
+            otherLatitude *= RADIAN;
+            deltaLongitude *= RADIAN;
 
             double cos = Math.Cos(deltaLongitude) * Math.Cos(thisLatitude) * Math.Cos(otherLatitude) +
                 Math.Sin(thisLatitude) * Math.Sin(otherLatitude);
 
-            return EARTH_RADIUS * Math.Acos(Math.Max(Math.Min(cos, 1), -1));
+            return EARTH_RADIUS * Math.Acos(cos);
         }
     }
 
@@ -367,7 +375,7 @@ namespace Gpx
 
     public class GpxPointCollection<T> : IList<T> where T : GpxPoint
     {
-        private readonly List<T> Points_ = new List<T>();
+        private List<T> Points_ = new List<T>();
 
         public GpxPoint AddPoint(T point)
         {
@@ -497,9 +505,10 @@ namespace Gpx
 
     public abstract class GpxTrackOrRoute
     {
-        private readonly List<GpxLink> Links_ = new List<GpxLink>(0);
+        private List<GpxLink> Links_ = new List<GpxLink>(0);
 
         public string Name { get; set; }
+        public DateTime? Time { get; set; }
         public string Comment { get; set; }
         public string Description { get; set; }
         public string Source { get; set; }
@@ -520,39 +529,19 @@ namespace Gpx
             get { return DisplayColor != null; }
         }
 
-        public abstract double GetLength();
+        public abstract GpxPointCollection<GpxPoint> ToGpxPoints();
     }
 
     public class GpxRoute : GpxTrackOrRoute
     {
-        private readonly GpxPointCollection<GpxRoutePoint> RoutePoints_ = new GpxPointCollection<GpxRoutePoint>();
+        private GpxPointCollection<GpxRoutePoint> RoutePoints_ = new GpxPointCollection<GpxRoutePoint>();
 
         public GpxPointCollection<GpxRoutePoint> RoutePoints
         {
             get { return RoutePoints_; }
         }
 
-        public override double GetLength()
-        {
-            double result = 0;
-            GpxPoint current = null;
-
-            foreach (GpxRoutePoint routePoint in RoutePoints_)
-            {
-                if (current != null) result += routePoint.GetDistanceFrom(current);
-                current = routePoint;
-
-                foreach (GpxPoint gpxPoint in routePoint.RoutePoints)
-                {
-                    result += gpxPoint.GetDistanceFrom(current);
-                    current = gpxPoint;
-                }
-            }
-
-            return result;
-        }
-
-        public GpxPointCollection<GpxPoint> ToGpxPoints()
+        public override GpxPointCollection<GpxPoint> ToGpxPoints()
         {
             GpxPointCollection<GpxPoint> points = new GpxPointCollection<GpxPoint>();
 
@@ -572,20 +561,14 @@ namespace Gpx
 
     public class GpxTrack : GpxTrackOrRoute
     {
-        private readonly List<GpxTrackSegment> Segments_ = new List<GpxTrackSegment>(1);
+        private List<GpxTrackSegment> Segments_ = new List<GpxTrackSegment>(1);
 
         public IList<GpxTrackSegment> Segments
         {
             get { return Segments_; }
         }
 
-        public override double GetLength()
-        {
-            return Segments_.Sum(s => s.TrackPoints.GetLength());
-        }
-
-        [Obsolete]
-        public GpxPointCollection<GpxPoint> ToGpxPoints()
+        public override GpxPointCollection<GpxPoint> ToGpxPoints()
         {
             GpxPointCollection<GpxPoint> points = new GpxPointCollection<GpxPoint>();
 
@@ -605,7 +588,7 @@ namespace Gpx
 
     public class GpxTrackSegment
     {
-        readonly GpxPointCollection<GpxTrackPoint> TrackPoints_ = new GpxPointCollection<GpxTrackPoint>();
+        GpxPointCollection<GpxTrackPoint> TrackPoints_ = new GpxPointCollection<GpxTrackPoint>();
 
         public GpxPointCollection<GpxTrackPoint> TrackPoints
         {
@@ -618,9 +601,14 @@ namespace Gpx
         public string Href { get; set; }
         public string Text { get; set; }
         public string MimeType { get; set; }
+
         public Uri Uri
         {
-            get { return Uri.TryCreate(Href, UriKind.Absolute, out Uri result) ? result : null; }
+            get
+            {
+                Uri result;
+                return Uri.TryCreate(Href, UriKind.Absolute, out result) ? result : null;
+            }
         }
     }
 

@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gpx
+namespace Dlg.Krakow.Gpx
 {
     public class GpxProperties
     {

@@ -11,7 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml;
 
-namespace Gpx
+namespace Dlg.Krakow.Gpx
 {
     public class GpxWriter : IDisposable
     {
